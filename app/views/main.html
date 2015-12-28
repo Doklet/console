@@ -1,0 +1,44 @@
+<div class="container">
+  <div class="alert alert-danger" ng-show="error!=undefined">
+    <button type="button" class="close" ng-click="error=undefined"><span>&times;</span>
+    </button>
+    {{error}}
+  </div>
+  <div class="alert alert-info alert-dismissible" ng-show="info!=undefined">{{info}}</div>
+  <div class="page-header">
+<!--     <div class="pull-right">
+      <div class="btn-group" role="group">
+        <button type="button" class="btn btn-default">...</button>
+      </div>
+    </div> -->
+    <h4>Console <small>{{account.name}}</small></h4>
+  </div>
+  <div class="row">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <div class="pull-right">
+          <div class="btn-group" role="group">
+            <button type="button" class="btn btn-primary" ng-click="run()">Run</button>
+          </div>
+        </div>
+        <h5>Commands</h5>
+      </div>
+      <textarea class="form-control myTextArea" rows="3" ng-model="in.query" placeholder="Type commands to execute here"></textarea>
+    </div>
+  </div>
+  <!-- Default panel contents -->
+  <div class="row">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <div class="pull-right">
+          <div class="btn-group" role="group">
+            <button type="button" class="btn btn-default">Text</button>
+            <button type="button" class="btn btn-default">Table</button>
+          </div>
+        </div>
+        <h5>Result</h5>
+      </div>
+      <textarea class="form-control myTextArea" rows="10">{{out.result}}</textarea>
+    </div>
+  </div>
+</div>
