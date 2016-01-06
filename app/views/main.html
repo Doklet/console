@@ -6,7 +6,7 @@
   </div>
   <div class="alert alert-info alert-dismissible" ng-show="info!=undefined">{{info}}</div>
   <div class="page-header">
-<!--     <div class="pull-right">
+    <!--     <div class="pull-right">
       <div class="btn-group" role="group">
         <button type="button" class="btn btn-default">...</button>
       </div>
@@ -20,10 +20,20 @@
           <div class="btn-group" role="group">
             <button type="button" class="btn btn-primary" ng-click="run()">Run</button>
           </div>
+          <div class="btn-group">
+            <button type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Save <span class="caret"></span></button>
+            <ul class="dropdown-menu dropdown-menu-right">
+              <li class="dropdown-header">Dashboard</li>
+              <li ng-repeat="doclet in doclets | dashboardFilter">
+                <a ng-click="saveTo(doclet)">{{doclet.name}}</a>
+              </li>
+            </ul>
+          </div>
         </div>
-        <h5>Commands</h5>
+        <h5>Input</h5>
       </div>
-      <textarea class="form-control myTextArea" rows="3" ng-model="in.query" placeholder="Type commands to execute here"></textarea>
+      <textarea class="form-control myTextArea" rows="3" ng-model="in.commands" placeholder="Type commands to execute here"></textarea>
+      <textarea class="form-control myTextArea" rows="3" ng-model="in.text" placeholder="optional text input here"></textarea>
     </div>
   </div>
   <!-- Default panel contents -->

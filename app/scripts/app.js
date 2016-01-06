@@ -1,13 +1,5 @@
 'use strict';
 
-/**
- * @ngdoc overview
- * @name consoleApp
- * @description
- * # consoleApp
- *
- * Main module of the application.
- */
 angular
   .module('consoleApp', [
     'ngAnimate',
@@ -31,3 +23,7 @@ angular
         redirectTo: '/'
       });
   });
+
+angular.module('consoleApp').config(function($httpProvider) {
+  $httpProvider.interceptors.push('AuthInterceptor');
+});
