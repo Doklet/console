@@ -23,6 +23,9 @@
           <div class="btn-group">
             <button type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Save <span class="caret"></span></button>
             <ul class="dropdown-menu dropdown-menu-right">
+              <li>
+                <input type="text" class="form-control" ng-model="save.name" placeholder="Name of brick">
+              </li>
               <li class="dropdown-header">Dashboard</li>
               <li ng-repeat="doclet in doclets | dashboardFilter">
                 <a ng-click="saveTo(doclet)">{{doclet.name}}</a>
@@ -32,8 +35,8 @@
         </div>
         <h5>Input</h5>
       </div>
-      <textarea class="form-control myTextArea" rows="3" ng-model="in.commands" placeholder="Type commands to execute here"></textarea>
-      <textarea class="form-control myTextArea" rows="3" ng-model="in.text" placeholder="optional text input here"></textarea>
+      <textarea class="form-control myTextArea" rows="3" ng-model="in.commands" ng-change="autoSave()" placeholder="Type commands to execute here"></textarea>
+      <textarea class="form-control myTextArea" rows="3" ng-model="in.text" ng-change="autoSave()" placeholder="optional text input here"></textarea>
     </div>
   </div>
   <!-- Default panel contents -->
@@ -42,13 +45,55 @@
       <div class="panel-heading">
         <div class="pull-right">
           <div class="btn-group" role="group">
-            <button type="button" class="btn btn-default">Text</button>
-            <button type="button" class="btn btn-default">Table</button>
+            <button type="button" class="btn btn-default" ng-class="{'active':out.format===FORMAT.TEXT}" ng-click="out.format=FORMAT.TEXT">Text</button>
+            <button type="button" class="btn btn-default" ng-class="{'active':out.format===FORMAT.TABLE}" ng-click="out.format=FORMAT.TABLE">Table</button>
           </div>
         </div>
         <h5>Result</h5>
       </div>
-      <textarea class="form-control myTextArea" rows="10">{{out.result}}</textarea>
+      <!-- PROCESSING -->
+      <div class="jumbotron text-center" ng-if="out.processing==true">
+        <p>The processing request, please wait</p>
+      </div>
+      <!-- FORMAT-->
+      <div ng-switch on="out.format" ng-if="out.processing!=true">
+        <div ng-switch-when="0">
+          <!-- TEXT -->
+          <textarea class="form-control myTextArea" rows="10">{{out.result}}</textarea>
+        </div>
+        <div ng-switch-when="1">
+          <!-- TABLE -->
+          <div class="table-responsive" ng-if="isTableOutput() == true">
+            <table class="table table-condensed table-hover">
+              <thead>
+                <tr>
+                  <td ng-repeat="key in keys(out.result[0]) | filter:'!$$'"> {{key}} </td>
+                </tr>
+              </thead>
+              <tbody>
+                <tr ng-repeat-start="item in out.result | filter:searchRows" ng-init="item.$$expanded=false" ng-click="item.$$expanded=!item.$$expanded" ng-class="{ 'active' : item.$$expanded == true }">
+                  <td ng-repeat="key in keys(item) | filter:'!$$'"> {{ item[key] | limitTo : 50 }} </td>
+                </tr>
+                <tr ng-repeat-end="" ng-if="item.$$expanded">
+                  <!-- Need to remove the $$ parameters from the length ? -->
+                  <td colspan="{{keys(out.result[0]).length}}">
+                    <dl class="dl-horizontal">
+                      <div ng-repeat="key in keys(item) | filter:'!$$'">
+                        <dt>{{key}}</dt>
+                        <dd>{{item[key]}}</dd>
+                      </div>
+                    </dl>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="jumbotron text-center" ng-if="isTableOutput() == false">
+            <p>The output is not a valid table</p>
+          </div>
+        </div>
+      </div>
+      <!-- END FORMAT-->
     </div>
   </div>
 </div>

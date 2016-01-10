@@ -2,7 +2,7 @@
 
 angular.module('consoleApp')
   .controller('MainCtrl', function($scope, $location, $window,
-    Client, AccountService, DocletService, PipeService) {
+    Client, AccountService, DocletService, PipeService, AutosaveService) {
 
     $scope.FORMAT = {
       TEXT: 0,
@@ -22,7 +22,17 @@ angular.module('consoleApp')
       result: undefined
     };
 
+    $scope.save = {
+      name: undefined
+    };
+
     $scope.init = function() {
+
+      // Store doclet id
+      var docletId = $location.search().docletId;
+      if (docletId !== undefined) {
+        Client.setDocletId($window.unescape(docletId));
+      }
 
       // Store session id
       var sessionId = $location.search().token;
@@ -33,15 +43,39 @@ angular.module('consoleApp')
       // Store account if available
       var accountId = $location.search().accountId;
       if (accountId !== undefined) {
-        var accountId = $window.unescape($location.search().accountId);
+        accountId = $window.unescape($location.search().accountId);
 
         AccountService.fetchAccount(accountId)
           .success(function(account) {
             Client.setAccount(account);
             $scope.account = account;
+
+            // Fetch any autosave
+            AutosaveService.getAutoSave(account)
+              .success(function(autosave) {
+                $scope.in.commands = autosave.commands;
+                $scope.in.text = autosave.input;
+              })
+              .error(function() {
+                // can happen!
+              });
+
           })
           .error(function() {
             $scope.error = 'Failed to fetch account';
+          });
+
+      } else {
+
+        // Fetch default autosave
+        AutosaveService.getAutoSave(undefined)
+          .success(function(autosave) {
+            $scope.in.commands = autosave.commands;
+            $scope.in.text = autosave.input;
+
+          })
+          .error(function() {
+            // 
           });
       }
 
@@ -60,6 +94,19 @@ angular.module('consoleApp')
     // Perform init
     $scope.init();
 
+    $scope.keys = function(obj) {
+      return obj ? Object.keys(obj) : [];
+    };
+
+    $scope.isTableOutput = function() {
+      // If the output is a array it's valid
+      if ($scope.out.result instanceof Array) {
+        return true;
+      }
+      // otherwise it's a not a valid table output
+      return false;
+    };
+    
     $scope.run = function() {
 
       $scope.info = undefined;
@@ -88,9 +135,16 @@ angular.module('consoleApp')
     $scope.saveTo = function(dashboard) {
 
       // Execute the pipe with the provided parameters
-      var commands = $scope.in.commands;
 
-      var cmd = 'brick --name=New --cmds="' + $window.btoa(commands) + '" --bricksid=' + dashboard.id;
+      var name = 'New';
+      if ($scope.save.name !== undefined) {
+        name = $scope.save.name;
+      }
+
+      var commands = $scope.in.commands;
+      var input = $scope.in.text;
+
+      var cmd = 'brick --name="' + name + '" --cmds="' + $window.btoa(commands) + '" --bricksid=' + dashboard.id + ' --input=' + $window.btoa(input);
 
       // Set the type depending on selected output view
       switch ($scope.out.format) {
@@ -111,6 +165,19 @@ angular.module('consoleApp')
           $scope.error = 'Failed to save brick';
         });
 
+    };
+
+    $scope.autoSave = function() {
+
+      var account = Client.getAccount();
+
+      AutosaveService.autoSave(account, $scope.in.commands, $scope.in.text)
+        .success(function() {
+          // Ignore any result
+        })
+        .error(function() {
+          // Ignore any error
+        });
     };
 
   });
