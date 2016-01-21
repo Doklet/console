@@ -9,86 +9,128 @@ angular.module('consoleApp')
       TABLE: 1
     };
 
-    $scope.account = undefined;
+    // $scope.account = undefined;
 
-    $scope.in = {
-      commands: undefined,
-      text: undefined
-    };
+    // $scope.in = {
+    //   commands: undefined,
+    //   text: undefined
+    // };
 
-    $scope.out = {
-      processing: false,
-      format: $scope.FORMAT.TEXT,
-      result: undefined
-    };
+    // $scope.out = {
+    //   processing: false,
+    //   format: $scope.FORMAT.TEXT,
+    //   result: undefined
+    // };
 
-    $scope.save = {
-      name: undefined
-    };
+    // $scope.save = {
+    //   name: undefined
+    // };
 
     $scope.init = function() {
 
-      // Store doclet id
-      var docletId = $location.search().docletId;
-      if (docletId !== undefined) {
-        Client.setDocletId($window.unescape(docletId));
-      }
+      // Get the main scope from the client
+      // will be the default one 
+      var mainScope = Client.getMainScope();
 
-      // Store session id
-      var sessionId = $location.search().token;
-      if (sessionId !== undefined) {
-        Client.setSessionId($window.unescape(sessionId));
-      }
+      $scope.in = mainScope.in;
+      $scope.out = mainScope.out;
 
-      // Store account if available
-      var accountId = $location.search().accountId;
-      if (accountId !== undefined) {
-        accountId = $window.unescape($location.search().accountId);
 
-        AccountService.fetchAccount(accountId)
-          .success(function(account) {
-            Client.setAccount(account);
-            $scope.account = account;
+      if (Client.getSessionId() === undefined) {
 
-            // Fetch any autosave
-            AutosaveService.getAutoSave(account)
-              .success(function(autosave) {
-                $scope.in.commands = autosave.commands;
-                $scope.in.text = autosave.input;
-              })
-              .error(function() {
-                // can happen!
-              });
+        // Store doclet id
+        var docletId = $location.search().docletId;
+        if (docletId !== undefined) {
+          Client.setDocletId($window.unescape(docletId));
+        }
 
+        // Store session id
+        var sessionId = $location.search().token;
+        if (sessionId !== undefined) {
+          Client.setSessionId($window.unescape(sessionId));
+        }
+
+        // Store account if available
+        var accountId = $location.search().accountId;
+        if (accountId !== undefined) {
+
+          accountId = $window.unescape($location.search().accountId);
+
+          AccountService.fetchAccount(accountId)
+            .success(function(account) {
+              Client.setAccount(account);
+              $scope.account = account;
+
+              // Fetch any autosave
+              AutosaveService.getAutoSave(account)
+                .success(function(autosave) {
+                  $scope.in.commands = autosave.commands;
+                  $scope.in.text = autosave.input;
+                })
+                .error(function() {
+                  // can happen!
+                });
+
+            })
+            .error(function() {
+              $scope.error = 'Failed to fetch account';
+            });
+        } else {
+
+          // Fetch any autosave for the default context
+          AutosaveService.getAutoSave(undefined)
+            .success(function(autosave) {
+              $scope.in.commands = autosave.commands;
+              $scope.in.text = autosave.input;
+            })
+            .error(function() {
+              // can happen!
+            });
+        }
+
+        // Fetch the users doclets
+        DocletService.list()
+          .success(function(doclets) {
+            Client.setDoclets(doclets);
+            $scope.doclets = Client.getDoclets();
           })
           .error(function() {
-            $scope.error = 'Failed to fetch account';
+            $scope.info = undefined;
+            $scope.error = 'Failed to fetch doclets';
+          });
+
+        // Fetch all available commands
+        PipeService.getAllCommands()
+          .success(function(commands) {
+            Client.setAvailableCommands(commands);
+            $scope.availableCommands = Client.getAvailableCommands();
+          })
+          .error(function() {
+            $scope.info = undefined;
+            $scope.error = 'Failed to fetch commands';
           });
 
       } else {
 
-        // Fetch default autosave
-        AutosaveService.getAutoSave(undefined)
-          .success(function(autosave) {
-            $scope.in.commands = autosave.commands;
-            $scope.in.text = autosave.input;
+        // Get the main scope from the client
+        // will be the default one 
+        var savedScope = Client.getMainScope();
 
-          })
-          .error(function() {
-            // 
-          });
+        $scope.in = savedScope.in;
+        $scope.out = savedScope.out;
+        $scope.account = Client.getAccount();
+        $scope.doclets = Client.getDoclets();
+
+        // // Fetch default autosave
+        // AutosaveService.getAutoSave(undefined)
+        //   .success(function(autosave) {
+        //     $scope.in.commands = autosave.commands;
+        //     $scope.in.text = autosave.input;
+        //   })
+        //   .error(function() {
+        //     // 
+        //   });
       }
-
-      // Store doclets
-      DocletService.list()
-        .success(function(doclets) {
-          Client.setDoclets(doclets);
-          $scope.doclets = Client.getDoclets();
-        })
-        .error(function() {
-          $scope.info = undefined;
-          $scope.error = 'Failed to fetch doclets';
-        });
     };
 
     // Perform init
@@ -106,7 +148,7 @@ angular.module('consoleApp')
       // otherwise it's a not a valid table output
       return false;
     };
-    
+
     $scope.run = function() {
 
       $scope.info = undefined;

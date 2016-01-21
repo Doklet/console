@@ -19,4 +19,8 @@ angular.module('consoleApp')
       return $http.post('/api/pipe/run?' + args, input);
     };
 
+    this.getAllCommands = function () {
+      return $http.get('/api/command');
+    };
+
   });
