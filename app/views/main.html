@@ -37,7 +37,48 @@
         </div>
         <h5>Input</h5>
       </div>
-      <textarea class="form-control myTextArea" rows="3" ng-model="in.commands" ng-change="autoSave()" placeholder="Type commands to execute here"></textarea>
+      <!--       <p>filterby {{autoComplete.filterBy}}</p> 
+      <p>autoCmd {{autoComplete.command}}</p>
+      <p>cmd {{in.commands}}</p> -->
+      <!-- Commands -->
+      <textarea class="form-control myTextArea" rows="3" ng-model="in.commands" ng-change="autoSave()" ng-focus="autoComplete.show=true" ng-blur="commandsBlur()" placeholder="Type commands to execute here"></textarea>
+      <!-- Autocomplete -->
+      <div class="panel panel-default overlay" ng-show="autoComplete.show === true" autofocus>
+        <div class="panel-body">
+          <table class="table">
+            <tr ng-repeat="c in availableCommands | filter:autoComplete.filterBy" ng-click="commandSelected(c)">
+              <td style="border-top: none;"><a>{{c.name}}</a>
+              </td>
+              <td style="border-top: none;">{{c.description}}</td>
+            </tr>
+            <tr>
+              <td>Options</td>
+              <td> </td>
+            </tr>
+            <tr>
+              <td style="border-top: none;">
+                <dl ng-repeat="opt in autoComplete.command.opts">
+                  <dt><a ng-click="optionSelected(opt)">--{{opt.name}}</a></dt>
+                  <dd>{{opt.description}}</dd>
+                </dl>
+              </td>
+            </tr>
+            <tr>
+              <tr>
+                <td>Accounts</td>
+                <td> </td>
+              </tr>
+              <td style="border-top: none;">
+                <dl ng-repeat="account in accounts">
+                  <dt><a ng-click="accountSelected(account)">{{account.name}}</a></dt>
+                  <dd>{{account.provider}}</dd>
+                </dl>
+              </td>
+            </tr>
+          </table>
+        </div>
+      </div>
+      <!-- Input -->
       <textarea class="form-control myTextArea" rows="3" ng-model="in.text" ng-change="autoSave()" placeholder="optional text input here"></textarea>
     </div>
   </div>

@@ -17,3 +17,9 @@ body {
   resize: vertical;
   border: none;
 }
+
+.overlay {
+  position: absolute;
+  z-index: 1000;
+  width: 68%;
+}

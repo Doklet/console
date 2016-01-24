@@ -18,6 +18,7 @@ angular.module('consoleApp')
     var _sessionId;
     var _docletId;
     var _account;
+    var _accounts;
     var _doclets;
     var _availableCommands;
 
@@ -51,6 +52,14 @@ angular.module('consoleApp')
       _account = account;
     };
 
+    this.getAccounts = function() {
+      return _accounts;
+    };
+
+    this.setAccounts = function(accounts) {
+      _accounts = accounts;
+    };
+
     this.setDoclets = function(doclets) {
       _doclets = doclets;
     };
@@ -65,6 +74,18 @@ angular.module('consoleApp')
 
     this.getAvailableCommands = function() {
       return _availableCommands;
+    };
+
+    this.findCommand = function(commandName) {
+      
+      for (var i = 0; i < _availableCommands.length; i++) {
+
+        if (commandName === _availableCommands[i].name) {
+          return _availableCommands[i];
+        }
+      }
+
+      return undefined;
     };
 
   });

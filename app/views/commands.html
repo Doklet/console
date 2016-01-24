@@ -18,7 +18,7 @@
   <div class="row">
     <div class="col-md-12">
       <div class="list-group">
-        <a ng-repeat="command in availableCommands" class="list-group-item">
+        <a ng-repeat="command in availableCommands | orderBy:'name'" class="list-group-item">
           <h4 class="list-group-item-heading">{{command.name}}</h4>
           <p class="list-group-item-text">{{command.description}}</p>
           <h5>Options</h5>

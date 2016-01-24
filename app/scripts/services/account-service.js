@@ -7,4 +7,8 @@ angular.module('consoleApp')
       return $http.get('/api/account/' + accountId);
     };
 
+    this.getAllAccounts = function() {
+      return $http.get('/api/account');
+    };
+
   });

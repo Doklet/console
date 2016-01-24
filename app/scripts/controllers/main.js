@@ -1,7 +1,7 @@
 'use strict';
 
 angular.module('consoleApp')
-  .controller('MainCtrl', function($scope, $location, $window,
+  .controller('MainCtrl', function($scope, $location, $window, $timeout,
     Client, AccountService, DocletService, PipeService, AutosaveService) {
 
     $scope.FORMAT = {
@@ -25,6 +25,12 @@ angular.module('consoleApp')
     // $scope.save = {
     //   name: undefined
     // };
+
+    $scope.autoComplete = {
+      show: false,
+      filterBy: undefined,
+      command: undefined
+    };
 
     $scope.init = function() {
 
@@ -110,6 +116,15 @@ angular.module('consoleApp')
             $scope.error = 'Failed to fetch commands';
           });
 
+        AccountService.getAllAccounts()
+          .success(function(accounts) {
+            Client.setAccounts(accounts);
+            $scope.accounts = accounts;
+          })
+          .error(function() {
+            $scope.error = 'Failed to fetch accounts';
+          });
+
       } else {
 
         // Get the main scope from the client
@@ -120,6 +135,7 @@ angular.module('consoleApp')
         $scope.out = savedScope.out;
         $scope.account = Client.getAccount();
         $scope.doclets = Client.getDoclets();
+        $scope.availableCommands = Client.getAvailableCommands();
 
         // // Fetch default autosave
         // AutosaveService.getAutoSave(undefined)
@@ -147,6 +163,47 @@ angular.module('consoleApp')
       }
       // otherwise it's a not a valid table output
       return false;
+    };
+
+    // For auto complete
+    $scope.commandSelected = function(command) {
+
+      var commands = $scope.in.commands;
+
+      if (commands === undefined || commands.length === 0) {
+        $scope.in.commands = command.name;
+      } else {
+
+        // remove the last word
+        var lastIndex = commands.lastIndexOf(' ');
+        var trimmed = commands.substring(0, lastIndex);
+
+        $scope.in.commands = trimmed + ' ' + command.name;
+      }
+
+    };
+
+    $scope.optionSelected = function(option) {
+
+      var commands = $scope.in.commands;
+      // remove the last word
+      var lastIndex = commands.lastIndexOf(' ');
+      var trimmed = commands.substring(0, lastIndex);
+
+      $scope.in.commands = trimmed + ' --' + option.name;
+    };
+
+    $scope.accountSelected = function(account) {
+
+      $scope.in.commands += account.name;
+    };
+
+    $scope.commandsBlur = function() {
+      $timeout(function() {
+          $scope.autoComplete.show = false;
+        },
+        300
+      );
     };
 
     $scope.run = function() {
@@ -211,6 +268,9 @@ angular.module('consoleApp')
 
     $scope.autoSave = function() {
 
+      $scope.autoComplete.filterBy = $scope.parseFilterBy($scope.in.commands);
+      $scope.autoComplete.command = Client.findCommand($scope.autoComplete.filterBy);
+
       var account = Client.getAccount();
 
       AutosaveService.autoSave(account, $scope.in.commands, $scope.in.text)
@@ -220,6 +280,17 @@ angular.module('consoleApp')
         .error(function() {
           // Ignore any error
         });
+    };
+
+    $scope.parseFilterBy = function(commandPipe) {
+
+      var commands = commandPipe.split('|');
+
+      var reversed = commands.reverse()[0];
+
+      var currentWithOpts = reversed.trim().split(' ');
+
+      return currentWithOpts[0];
     };
 
   });
