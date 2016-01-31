@@ -1,7 +1,7 @@
 'use strict';
 
 angular.module('consoleApp')
-  .controller('MainCtrl', function($scope, $location, $window, $timeout,
+  .controller('MainCtrl', function($scope, $location, $window, $timeout, $log,
     Client, AccountService, DocletService, PipeService, AutosaveService) {
 
     $scope.FORMAT = {
@@ -29,7 +29,8 @@ angular.module('consoleApp')
     $scope.autoComplete = {
       show: false,
       filterBy: undefined,
-      command: undefined
+      command: undefined,
+      showAccounts: false
     };
 
     $scope.init = function() {
@@ -186,6 +187,7 @@ angular.module('consoleApp')
     $scope.optionSelected = function(option) {
 
       var commands = $scope.in.commands;
+
       // remove the last word
       var lastIndex = commands.lastIndexOf(' ');
       var trimmed = commands.substring(0, lastIndex);
@@ -197,6 +199,24 @@ angular.module('consoleApp')
 
       $scope.in.commands += account.name;
     };
+
+    $scope.hasWrittenAccountOption = function(commands) {
+
+      // Get the last word
+      var n = commands.split(' ');
+      var lastword = n[n.length - 1];
+
+      if (lastword !== undefined) {
+
+        var contains = lastword.lastIndexOf('--account=') !== -1;
+
+        return contains;
+      }
+
+      return false;
+    };
+
+    // end autocomplete
 
     $scope.commandsBlur = function() {
       $timeout(function() {
@@ -270,6 +290,7 @@ angular.module('consoleApp')
 
       $scope.autoComplete.filterBy = $scope.parseFilterBy($scope.in.commands);
       $scope.autoComplete.command = Client.findCommand($scope.autoComplete.filterBy);
+      $scope.autoComplete.showAccounts = $scope.hasWrittenAccountOption($scope.in.commands);
 
       var account = Client.getAccount();
 

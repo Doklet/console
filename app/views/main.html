@@ -5,14 +5,14 @@
     {{error}}
   </div>
   <div class="alert alert-info alert-dismissible" ng-show="info!=undefined">{{info}}</div>
-  <div class="page-header">
+  <div class="page-header border-none">
     <!--     <div class="pull-right">
       <div class="btn-group" role="group">
         <button type="button" class="btn btn-default">...</button>
       </div>
     </div> -->
     <h4>Console <small>{{account.name}}</small>
-      <span class="pull-right"><a href="#/commands">Commands</a></span>
+     <!--  <span class="pull-right"><a href="#/commands">Commands</a></span> -->
     </h4>
   </div>
   <div class="row">
@@ -51,11 +51,12 @@
               </td>
               <td style="border-top: none;">{{c.description}}</td>
             </tr>
-            <tr>
+            <!-- Options -->
+            <tr ng-show="autoComplete.command !== undefined && autoComplete.showAccounts !== true">
               <td>Options</td>
-              <td> </td>
+              <td><small>List of available command options</small></td>
             </tr>
-            <tr>
+            <tr ng-show="autoComplete.command !== undefined && autoComplete.showAccounts !== true">
               <td style="border-top: none;">
                 <dl ng-repeat="opt in autoComplete.command.opts">
                   <dt><a ng-click="optionSelected(opt)">--{{opt.name}}</a></dt>
@@ -63,11 +64,12 @@
                 </dl>
               </td>
             </tr>
-            <tr>
-              <tr>
-                <td>Accounts</td>
-                <td> </td>
-              </tr>
+            <!-- Accounts -->
+            <tr ng-show="autoComplete.showAccounts === true">
+              <td>Accounts</td>
+              <td><small>Choose one of your accounts</small></td>
+            </tr>
+            <tr ng-show="autoComplete.showAccounts === true">
               <td style="border-top: none;">
                 <dl ng-repeat="account in accounts">
                   <dt><a ng-click="accountSelected(account)">{{account.name}}</a></dt>
