@@ -1,6 +1,7 @@
 .PHONY: distro
 
 name=console
+local-tx1-host=10.0.1.14
 
 init:
 	bower install
@@ -36,6 +37,14 @@ deploy: distro
 	ls distro/$(name).zip
 	# Copy the distro to production
 	scp distro/$(name).zip root@digitalocean-prod-0:/var/lib/skyraid/packages/$(name).zip
+
+tx1deploy: distro
+	# Ensure the distro exist
+	ls distro/$(name).zip
+	scp distro/$(name).zip skyraid@$(local-tx1-host):~
+	# Unzip the new release
+	ssh skyraid@$(local-tx1-host) 'unzip $(name) -d $(name)' > /dev/null
+	# TODO need to symlink this one
 
 devdeploy: build distro
 	-rm /var/lib/skyraid/packages/$(name).zip
